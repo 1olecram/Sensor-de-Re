@@ -6,33 +6,35 @@
 #include <util/delay.h>
 #include <stdlib.h> // Necessário para a função itoa()
 #include "lcd_lib.h"
-
-// Função para gerar o pulso no pino EN (Enable) que confirma o envio dos dados
-
+#include "hc_lib.h"
 
 int main(void) {
-    // Substitui a função setup() do Arduino
     lcd_init();
-    
-    lcd_setCursor(0, 0);
-    lcd_print("Ola, mundo!"); // "Olá" sem acento para evitar bugs na tabela de caracteres do LCD
+    hc_sr04_init();
 
-    uint16_t segundos = 0;
-    char buffer_texto[6];
+    uint16_t distancia = 0;
+    char buffer_dist[6];
+    const uint16_t DISTANCIA_LIMITE = 15; // Limite de aproximação em centímetros
 
-    // Substitui a função loop() do Arduino
     while (1) {
+        distancia = get_distance();
+
+        // Linha 1: Sempre mostra a distância atualizada
+        lcd_setCursor(0, 0);
+        lcd_print("Dist: ");
+        itoa(distancia, buffer_dist, 10);
+        lcd_print(buffer_dist);
+        lcd_print(" cm     "); // Espaços limpam dígitos antigos residuais
+
+        // Linha 2: Altera a mensagem baseado no limiar de distância
         lcd_setCursor(0, 1);
-        
-        // Converte o número inteiro (segundos) em texto (string) base 10
-        itoa(segundos, buffer_texto, 10);
-        
-        lcd_print(buffer_texto);
-        lcd_print(" s  "); // Espaços extras apagam vestígios se os números mudarem de tamanho
-        
-        // Como não temos o millis() nativo, usamos um delay de 1 segundo para incrementar
-        _delay_ms(1000); 
-        segundos++;
+        if (distancia <= DISTANCIA_LIMITE && distancia > 0) {
+            lcd_print("ALERTA: PERTO!  ");
+        } else {
+            lcd_print("Status: Seguro  ");
+        }
+
+        _delay_ms(200); // Intervalo recomendado entre leituras do HC-SR04
     }
 
     return 0;
