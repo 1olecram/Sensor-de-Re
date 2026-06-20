@@ -14,25 +14,25 @@ void lcd_pulse_en() {
 // Função para enviar 1 byte completo (dividido em 2 pedaços de 4 bits)
 void lcd_send(uint8_t value, uint8_t is_data) {
     if (is_data) {
-        PORTB |= (1 << PB4);  // RS = HIGH (É um caractere/dado)
+        PORTB |= (1 << PB4);  // RS = HIGH -> caractere/dado
     } else {
-        PORTB &= ~(1 << PB4); // RS = LOW (É um comando de controle)
+        PORTB &= ~(1 << PB4); // RS = LOW -> comando de controle
     }
 
-    // --- ENVIA OS 4 BITS MAIS SIGNIFICATIVOS (High Nibble) ---
+    // Envia os 4 bits mais significativos
     PORTD &= ~((1 << PD6) | (1 << PD5) | (1 << PD4) | (1 << PD3)); // Zera os pinos de dados
     
-    // Mapeamento: O bit 4 do valor vai para D4(PD6), o bit 5 para D5(PD5), etc.
+    // Mapeamento do bit N 
     if (value & (1 << 4)) PORTD |= (1 << PD6);
     if (value & (1 << 5)) PORTD |= (1 << PD5);
     if (value & (1 << 6)) PORTD |= (1 << PD4);
     if (value & (1 << 7)) PORTD |= (1 << PD3);
     lcd_pulse_en();
 
-    // --- ENVIA OS 4 BITS MENOS SIGNIFICATIVOS (Low Nibble) ---
+    // Envia os 4 bits menos significativos
     PORTD &= ~((1 << PD6) | (1 << PD5) | (1 << PD4) | (1 << PD3)); // Zera os pinos de dados
     
-    // Mapeamento: O bit 0 do valor vai para D4(PD6), o bit 1 para D5(PD5), etc.
+    // Mapeamento do bit N
     if (value & (1 << 0)) PORTD |= (1 << PD6);
     if (value & (1 << 1)) PORTD |= (1 << PD5);
     if (value & (1 << 2)) PORTD |= (1 << PD4);
